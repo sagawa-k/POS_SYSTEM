@@ -39,13 +39,17 @@ class Order:
     
     # オーダー入力
     def input_order(self):
+        print("いらっしゃいませ！")
         while True:
             buy_item_code = input("購入したい商品コードを入力してください。終了する場合は、0を入力してください >>> ")
-            item = self.get_item_data(buy_item_code)
             if int(buy_item_code) != 0:
+                item = self.get_item_data(buy_item_code)
+                if item!=None:
                     print("{0} ({1}円)が登録されました".format(item[0], item[1]))
                     buy_item_count = input("購入個数を入力してください　>>> ")
                     self.add_item_order(buy_item_code,buy_item_count)
+                else:
+                    print("「{}」は商品マスタに存在しません".format(buy_item_code))
             else:
                 print("商品登録を終了します。")
                 break
@@ -55,6 +59,7 @@ class Order:
         self.sum_price = 0
         self.sum_count = 0
         self.receipt_name = "receipt_{}.log".format(self.datetime)
+        self.write_receipt("-----------------------------------------------")
         self.write_receipt("オーダー登録された商品一覧\n")
         for item_order,item_count in zip(self.item_order_list,self.item_count_list):
             result = self.get_item_data(item_order)
@@ -65,6 +70,7 @@ class Order:
             number += 1
             
         # 合計金額、個数の表示
+        self.write_receipt("-----------------------------------------------")
         self.write_receipt("合計金額:￥{0} {1}個".format(self.sum_price,self.sum_count))
     
     def calc_money(self):
@@ -88,16 +94,22 @@ class Order:
         
 ### マスタ登録
 def regist_item_by_csv(csv_path):
+    print("------- マスタ登録開始 ---------")
     item_master = []
+    count=0
     try:
         # item_codeの0が落ちるため、dtypeを設定
         item_master_df = pd.read_csv(csv_path,dtype = {"item_code":object})
         for item_code,item_name,price in zip(list(item_master_df["item_code"]),list(item_master_df["item_name"]),list(item_master_df["price"])):
             item_master.append(Item(item_code,item_name,price))
             print("{}({})".format(item_name,item_code))
+            count+=1
+        print("{}品の登録を完了しました。".format(count))
+        print("------- マスタ登録完了 ---------")
         return item_master
     except:
         print("マスタ登録が失敗しました")
+        print("------- マスタ登録完了 ---------")
         sys.exit()
         
 
